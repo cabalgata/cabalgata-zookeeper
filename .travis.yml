@@ -1,0 +1,20 @@
+language: python
+python:
+  - 2.6
+  - 2.7
+  - 3.3
+  - 3.4
+  - pypy
+
+install:
+  - "pip install -r requirements.txt"
+  - "pip install pytest-cov"
+  - "pip install coveralls"
+  - "python setup.py develop"
+
+script:
+  - py.test --cov bata
+  - coverage report -m
+
+after_script:
+  coveralls --verbose

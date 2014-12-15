@@ -52,3 +52,11 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# intellij project files
+*.ipr
+*.iml
+*.iws
+.idea
+
+.DS_Store
