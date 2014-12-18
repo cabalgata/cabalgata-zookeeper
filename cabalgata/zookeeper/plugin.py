@@ -14,11 +14,81 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+from contextlib import closing
+from glob import glob
+import os
+import shutil
+import tarfile
+
+from cabalgata.zookeeper import catalog, util
 
 
 class ZookeeperFactory(object):
-    pass
+    definitions = ()
+
+    @staticmethod
+    def versions():
+        return util.collect_zookeeper_versions()
+
+    @classmethod
+    def install(cls, version, directory, configuration=None):
+        downloaded_file = util.download_zookeeper(version, directory)
+
+        with closing(tarfile.open(downloaded_file)) as tar:
+            tar.extractall(directory)
+
+        with catalog.load_catalog(directory, rw=True) as c:
+            c.version = version
+
+    @classmethod
+    def uninstall(cls, directory):
+        with catalog.load_catalog(directory) as c:
+            shutil.rmtree(install_path(c.version, directory))
+
+    @classmethod
+    def load(cls, directory):
+        with catalog.load_catalog(directory) as c:
+            version = c.version
+
+        return Zookeeper(version, install_path(version, directory))
 
 
 class Zookeeper(object):
-    pass
+    definitions = ()
+
+    def __init__(self, version, directory):
+        self.version = version
+        self.directory = directory
+        self.install_path = install_path(version, directory)
+
+    def configure(self, configuration):
+        pass
+
+    def start(self):
+        with catalog.load_catalog(self.directory, rw=True) as c:
+            c.running = True
+
+    def stop(self, timeout=None):
+        with catalog.load_catalog(self.directory, rw=True) as c:
+            c.running = False
+
+    def kill(self):
+        with catalog.load_catalog(self.directory, rw=True) as c:
+            c.running = False
+
+    @property
+    def running(self):
+        with catalog.load_catalog(self.directory) as c:
+            return c.running
+
+    @property
+    def classpath(self):
+        """Get the classpath necessary to run ZooKeeper."""
+        jars = glob((os.path.join(self.install_path, 'zookeeper-*.jar')))
+        jars.extend(glob(os.path.join(self.install_path, "lib/*.jar")))
+
+        return ":".join(jars)
+
+
+def install_path(version, directory):
+    return os.path.join(directory, 'zookeeper-%s' % version)
