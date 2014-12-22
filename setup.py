@@ -91,7 +91,7 @@ setup(
     cmdclass={'doc': Doc},
 
     entry_points='''
-        [cabalgata.plugins]
+        [cabalgata.factories]
         zookeeper=cabalgata.zookeeper.plugin:ZookeeperFactory
     '''
 )

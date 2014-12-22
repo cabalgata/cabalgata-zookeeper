@@ -14,9 +14,11 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-from cabalgata.silla import plugins
+from cabalgata.silla import factories
+from cabalgata.silla.util import disk
 
 
 def test_zookeeper():
-    plugin = plugins.load_plugins('zookeeper')
-    assert plugin
+    with disk.temp_directory() as temp_dir:
+        plugin = factories.load_factory('zookeeper', temp_dir)
+        assert plugin

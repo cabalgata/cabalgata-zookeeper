@@ -33,14 +33,41 @@ class CorruptedCatalogError(Exception):
     """Error for corrupted catalog."""
 
 
-class Catalog(object):
-    def __init__(self, version, pid=0, running=False):
+class Installation(object):
+    def __init__(self, number, version, configuration, running):
+        self.number = number
         self.version = version
-        self.pid = pid
+        self.configuration = configuration
         self.running = running
 
     def as_tuple(self):
-        return self.version, self.pid, self.running
+        return self.number, self.version, self.configuration, self.running
+
+    def __eq__(self, other):
+        return self.as_tuple() == other.as_tuple()
+
+    def __repr__(self):
+        return 'Installation(%r, %r, %r, %r)' % self.as_tuple()
+
+    def to_json(self):
+        return {'number': self.number,
+                'version': self.version,
+                'configuration': self.configuration,
+                'running': self.running}
+
+    @classmethod
+    def from_json(cls, json_data):
+        return cls(json_data['number'], json_data['version'], json_data['configuration'], json_data['running'])
+
+
+class Catalog(object):
+    def __init__(self, version=zookeeper.VERSION, downloaded=None, installed=None):
+        self.version = version
+        self.downloaded = downloaded or {}
+        self.installed = installed or {}
+
+    def as_tuple(self):
+        return self.version, self.downloaded, self.installed
 
     def __eq__(self, other):
         return self.as_tuple() == other.as_tuple()
@@ -48,15 +75,28 @@ class Catalog(object):
     def __repr__(self):
         return 'Catalog(%r, %r, %r)' % self.as_tuple()
 
+    def next_number(self):
+        count = 0
+        while True:
+            for i in self.installed.values():
+                if i.number == count:
+                    break
+            else:
+                return count
+
+            count += 1
+
     @classmethod
     def from_json(cls, json):
-        return cls(json['version'], json['pid'], json['running'])
+        return cls(json['version'],
+                   set(json['downloaded']),
+                   dict((k, Installation.from_json(v)) for k, v in json['installed'].iteritems()))
 
     def to_json(self):
         return {
             'version': self.version,
-            'pid': self.pid,
-            'running': self.running
+            'downloaded': [v for v in self.downloaded],
+            'installed': dict((k, v.to_json()) for k, v in self.installed.iteritems())
         }
 
 
@@ -66,7 +106,7 @@ def initialize(catalog_dir):
 
 
 @contextlib.contextmanager
-def load_catalog(catalog_dir, rw=False):
+def load_catalog(catalog_dir, rw=True):
     catalog_file = os.path.join(catalog_dir, CATALOG_FILE)
     if os.path.exists(catalog_file):
         try:
@@ -77,7 +117,7 @@ def load_catalog(catalog_dir, rw=False):
             log.exception('Unable to read %s' % catalog_file)
             raise CorruptedCatalogError('Unable to read %s' % catalog_file)
     else:
-        catalog = Catalog(zookeeper.VERSION)
+        catalog = Catalog()
 
     yield catalog
 

@@ -16,28 +16,33 @@
 #
 import os
 
-from cabalgata.silla import plugins
+from cabalgata.silla import factories
 from cabalgata.silla.util import disk
 
 
 def test_plugin():
-    factory = plugins.load_plugins('zookeeper')
-
-    version = factory.versions().pop()
-
     with disk.temp_directory() as temp_dir:
-        factory.install(version, temp_dir)
+        factory = factories.load_factory('zookeeper', temp_dir)
 
-        service = factory.load(temp_dir)
+        version = factory.versions().pop()
 
-        classpath = service.classpath
+        factory.install('test', version)
+
+        service = factory.load('test')
+
+        classpath = service.classpath.split(':')
+        assert classpath
         for jar in classpath:
             assert os.path.exists(jar)
 
         service.start()
 
+        assert service.running
+
         service.stop()
 
-        factory.uninstall(temp_dir)
+        assert not service.running
+
+        factory.uninstall('test')
 
         assert os.path.exists(temp_dir)

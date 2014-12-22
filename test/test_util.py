@@ -27,7 +27,7 @@ def test_download_zookeeper():
             pass
 
     with disk.temp_directory() as temp_dir:
-        downloaded_file = util.download_zookeeper(util.collect_zookeeper_versions().pop(), temp_dir)
+        downloaded_file = util.download_zookeeper(temp_dir, util.collect_zookeeper_versions().pop())
 
         assert os.path.exists(downloaded_file)
         assert os.path.dirname(downloaded_file) == temp_dir

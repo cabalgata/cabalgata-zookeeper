@@ -32,13 +32,22 @@ REGEX = re.compile(r'^zookeeper\-(.*)/$')
 
 
 def collect_zookeeper_url():
-    data = json.load(urllib2.urlopen(ASF_MIRROR_URL))
+    try:
+        data = json.load(urllib2.urlopen(ASF_MIRROR_URL))
+    except Exception:
+        log.error('Unable to download %s', ASF_MIRROR_URL)
+        raise
 
     return data['preferred'] + '/zookeeper'
 
 
 def collect_zookeeper_versions():
-    soup = bs4.BeautifulSoup(urllib2.urlopen(collect_zookeeper_url()))
+    zookeeper_url = collect_zookeeper_url()
+    try:
+        soup = bs4.BeautifulSoup(urllib2.urlopen(zookeeper_url))
+    except Exception:
+        log.error('Unable to download %s', zookeeper_url)
+        raise
 
     versions = set()
     for link in soup.find_all('a'):
@@ -50,7 +59,7 @@ def collect_zookeeper_versions():
     return versions
 
 
-def download_zookeeper(version, directory):
+def download_zookeeper(directory, version):
     versions = collect_zookeeper_versions()
     if version not in versions:
         raise ValueError('%s not in available versions %s' % (version, ', '.join(versions)))

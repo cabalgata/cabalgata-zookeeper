@@ -17,14 +17,15 @@
 from distutils import version
 
 from cabalgata.silla.util import disk
+
 from cabalgata.zookeeper import catalog
 
 
 def test_catalog():
-    json = {'version': '1.2.3', 'pid': '456', 'running': False}
+    json = {'version': '1.2.3', 'downloaded': [], 'installed': {}}
     c = catalog.Catalog.from_json(json)
 
-    assert c == catalog.Catalog('1.2.3', '456')
+    assert c == catalog.Catalog('1.2.3')
     assert c.to_json() == json
 
 
@@ -35,4 +36,21 @@ def test_initialize():
         with catalog.load_catalog(temp_dir) as c:
             assert c.version
             assert version.StrictVersion(c.version)
-            assert not c.running
+
+
+def test_installation():
+    installation = catalog.Installation(1, '1.2.3', {'a': True}, False)
+
+    assert installation.from_json(installation.to_json()) == installation
+
+
+def test_next_number():
+    c = catalog.Catalog(installed={'zero': catalog.Installation(0, '1.2.3', {}, False)})
+    assert c.next_number() == 1
+
+    c = catalog.Catalog(installed={'one': catalog.Installation(1, '1.2.3', {}, False)})
+    assert c.next_number() == 0
+
+    c = catalog.Catalog(installed={'zero': catalog.Installation(0, '1.2.3', {}, False),
+                                   'three': catalog.Installation(3, '1.2.3', {}, False)})
+    assert c.next_number() == 1
