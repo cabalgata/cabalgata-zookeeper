@@ -34,30 +34,32 @@ class CorruptedCatalogError(Exception):
 
 
 class Installation(object):
-    def __init__(self, number, version, configuration, running):
+    def __init__(self, number, version, configuration, running, pid):
         self.number = number
         self.version = version
         self.configuration = configuration
         self.running = running
+        self.pid = pid
 
     def as_tuple(self):
-        return self.number, self.version, self.configuration, self.running
+        return self.number, self.version, self.configuration, self.running, self.pid
 
     def __eq__(self, other):
         return self.as_tuple() == other.as_tuple()
 
     def __repr__(self):
-        return 'Installation(%r, %r, %r, %r)' % self.as_tuple()
+        return 'Installation(%r, %r, %r, %r, %r)' % self.as_tuple()
 
     def to_json(self):
         return {'number': self.number,
                 'version': self.version,
                 'configuration': self.configuration,
-                'running': self.running}
+                'running': self.running,
+                'pid': self.pid}
 
     @classmethod
     def from_json(cls, json_data):
-        return cls(json_data['number'], json_data['version'], json_data['configuration'], json_data['running'])
+        return cls(json_data['number'], json_data['version'], json_data['configuration'], json_data['running'], json_data['pid'])
 
 
 class Catalog(object):
@@ -87,10 +89,10 @@ class Catalog(object):
             count += 1
 
     @classmethod
-    def from_json(cls, json):
-        return cls(json['version'],
-                   set(json['downloaded']),
-                   dict((k, Installation.from_json(v)) for k, v in json['installed'].iteritems()))
+    def from_json(cls, json_data):
+        return cls(json_data['version'],
+                   set(json_data['downloaded']),
+                   dict((k, Installation.from_json(v)) for k, v in json_data['installed'].iteritems()))
 
     def to_json(self):
         return {

@@ -39,18 +39,18 @@ def test_initialize():
 
 
 def test_installation():
-    installation = catalog.Installation(1, '1.2.3', {'a': True}, False)
+    installation = catalog.Installation(1, '1.2.3', {'a': True}, False, 0)
 
     assert installation.from_json(installation.to_json()) == installation
 
 
 def test_next_number():
-    c = catalog.Catalog(installed={'zero': catalog.Installation(0, '1.2.3', {}, False)})
+    c = catalog.Catalog(installed={'zero': catalog.Installation(0, '1.2.3', {}, False, 0)})
     assert c.next_number() == 1
 
-    c = catalog.Catalog(installed={'one': catalog.Installation(1, '1.2.3', {}, False)})
+    c = catalog.Catalog(installed={'one': catalog.Installation(1, '1.2.3', {}, False, 0)})
     assert c.next_number() == 0
 
-    c = catalog.Catalog(installed={'zero': catalog.Installation(0, '1.2.3', {}, False),
-                                   'three': catalog.Installation(3, '1.2.3', {}, False)})
+    c = catalog.Catalog(installed={'zero': catalog.Installation(0, '1.2.3', {}, False, 0),
+                                   'three': catalog.Installation(3, '1.2.3', {}, False, 0)})
     assert c.next_number() == 1

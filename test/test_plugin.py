@@ -26,7 +26,10 @@ def test_plugin():
 
         version = factory.versions().pop()
 
-        factory.install('test', version)
+        factory.install('test', version, {'server_id': 0,
+                                          'client_port': 20001,
+                                          'election_port': 20002,
+                                          'leader_port': 20003})
 
         service = factory.load('test')
 
