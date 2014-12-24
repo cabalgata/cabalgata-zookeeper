@@ -37,7 +37,8 @@ REGEX = re.compile(r'^zookeeper\-(.*)/$')
 
 def collect_zookeeper_url():
     try:
-        data = json.load(urllib.urlopen(ASF_MIRROR_URL))
+        response = urllib.urlopen(ASF_MIRROR_URL)
+        data = json.loads(response.read().decode('utf8'))
     except Exception:
         log.error('Unable to download %s', ASF_MIRROR_URL)
         raise
