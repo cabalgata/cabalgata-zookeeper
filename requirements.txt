@@ -1,2 +1,2 @@
 beautifulsoup4==4.3.2
-cabalgata-silla-de-montar==0.1.0
+cabalgata-silla-de-montar==0.1.1
