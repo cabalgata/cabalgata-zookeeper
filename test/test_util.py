@@ -1,5 +1,9 @@
 import os
-import urllib
+
+try:
+    import urllib2 as urllib
+except ImportError:
+    from urllib import request as urllib
 
 from cabalgata.silla.util import disk
 
