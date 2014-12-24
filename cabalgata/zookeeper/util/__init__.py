@@ -19,7 +19,11 @@ import json
 import logging
 import os
 import re
-import urllib2
+
+try:
+    import urllib2 as urllib
+except ImportError:
+    from urllib import request as urllib
 
 import bs4
 
@@ -33,7 +37,7 @@ REGEX = re.compile(r'^zookeeper\-(.*)/$')
 
 def collect_zookeeper_url():
     try:
-        data = json.load(urllib2.urlopen(ASF_MIRROR_URL))
+        data = json.load(urllib.urlopen(ASF_MIRROR_URL))
     except Exception:
         log.error('Unable to download %s', ASF_MIRROR_URL)
         raise
@@ -44,7 +48,7 @@ def collect_zookeeper_url():
 def collect_zookeeper_versions():
     zookeeper_url = collect_zookeeper_url()
     try:
-        soup = bs4.BeautifulSoup(urllib2.urlopen(zookeeper_url))
+        soup = bs4.BeautifulSoup(urllib.urlopen(zookeeper_url))
     except Exception:
         log.error('Unable to download %s', zookeeper_url)
         raise
@@ -67,7 +71,7 @@ def download_zookeeper(directory, version):
     file_name = 'zookeeper-%s.tar.gz' % version
 
     download_url = collect_zookeeper_url() + '/zookeeper-%s/%s' % (version, file_name)
-    download_stream = urllib2.urlopen(download_url)
+    download_stream = urllib.urlopen(download_url)
 
     download_file = os.path.join(directory, file_name)
     with closing(open(download_file, 'wb')) as fh:

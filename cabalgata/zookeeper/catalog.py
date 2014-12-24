@@ -92,13 +92,13 @@ class Catalog(object):
     def from_json(cls, json_data):
         return cls(json_data['version'],
                    set(json_data['downloaded']),
-                   dict((k, Installation.from_json(v)) for k, v in json_data['installed'].iteritems()))
+                   dict((k, Installation.from_json(v)) for k, v in json_data['installed'].items()))
 
     def to_json(self):
         return {
             'version': self.version,
             'downloaded': [v for v in self.downloaded],
-            'installed': dict((k, v.to_json()) for k, v in self.installed.iteritems())
+            'installed': dict((k, v.to_json()) for k, v in self.installed.items())
         }
 
 
