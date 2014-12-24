@@ -2,5 +2,7 @@ include README.rst
 include LICENSE.txt
 include NOTICE.txt
 include MANIFEST.in
+include requirements.txt
+include .gitignore
 recursive-include cabalgata *
 global-exclude *pyc *pyo

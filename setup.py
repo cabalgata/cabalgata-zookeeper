@@ -59,6 +59,9 @@ class Doc(Command):
                          '   %s/\n' % (mode, path))
 
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 setup(
     name='cabalgata-zookeeper',
     version=VERSION,
@@ -76,6 +79,8 @@ setup(
 
     zip_safe=False,
     platforms='any',
+
+    install_requires=required,
 
     tests_require=['tox'],
 
