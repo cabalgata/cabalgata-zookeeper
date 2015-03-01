@@ -14,6 +14,8 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+""" A collection of utilities that find Zookeeper distributions starting with the Apache Software Foundation mirrors.
+"""
 from contextlib import closing
 import json
 import logging
@@ -36,17 +38,23 @@ REGEX = re.compile(r'^zookeeper\-(.*)/$')
 
 
 def collect_zookeeper_url():
+    """ Collect the preferred Zookeeper distribution URL from the ASF mirror
+    :return str:
+    """
     try:
         response = urllib.urlopen(ASF_MIRROR_URL)
         data = json.loads(response.read().decode('utf8'))
     except Exception:
-        log.error('Unable to download %s', ASF_MIRROR_URL)
+        log.error('Unable to obtain Zookeeper URL from %s', ASF_MIRROR_URL)
         raise
 
     return data['preferred'] + '/zookeeper'
 
 
 def collect_zookeeper_versions():
+    """ Collect the set of Zookeeper versions that are available from the ASF mirrors
+    :return set: the set of Zookeeper versions that are available from the ASF mirrors
+    """
     zookeeper_url = collect_zookeeper_url()
     try:
         soup = bs4.BeautifulSoup(urllib.urlopen(zookeeper_url))
@@ -65,6 +73,12 @@ def collect_zookeeper_versions():
 
 
 def download_zookeeper(directory, version):
+    """ Download a specific version of Zookeeper from the ASF mirrors
+    :param str directory: the directory to place the distribution
+    :param str version: the version of Zookeeper to download
+    :return str: the path of the downloaded Zookeeper distribution
+    :raises ValueError: if the version is not available from the ASF mirrors
+    """
     versions = collect_zookeeper_versions()
     if version not in versions:
         raise ValueError('%s not in available versions %s' % (version, ', '.join(versions)))
